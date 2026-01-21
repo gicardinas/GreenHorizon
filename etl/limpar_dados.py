@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 # --- 1. CONFIGURAÇÃO DE CAMINHOS ---
-# Pega o caminho de onde este script está (pasta 'etl')
+# Pega o caminho de onde este script está
 BASE_DIR = Path(__file__).resolve().parent 
 
 # Define o caminho da pasta 'data' que está UM NÍVEL ACIMA
@@ -19,7 +19,7 @@ def run_etl():
 
     # --- 2. EXTRACT ---
     try:
-        # Montando os caminhos completos de forma dinâmica
+        # PEGANDO CSVS
         df_culturas = pd.read_csv(DATA_DIR / 'config_culturas.csv')
         df_tarifas = pd.read_csv(DATA_DIR / 'tarifas_energia.csv')
         df_historico = pd.read_csv(DATA_DIR / 'historico_leituras_sujo.csv')
@@ -31,7 +31,6 @@ def run_etl():
         df_historico = df_historico.dropna()
         
         # Removendo Temperaturas > 60°C (Ruído)
-        # Supondo que a coluna se chame 'temperatura' no seu CSV
         df_historico = df_historico[df_historico['temp_ambiente'] <= 60]
         
         print(f"🧹 Dados limpos. Total de registros válidos: {len(df_historico)}")
@@ -39,7 +38,7 @@ def run_etl():
         # --- 4. LOAD (Salvando no SQLite) ---
         conn = sqlite3.connect(DB_NAME)
         df_historico.to_sql('historico_clima', conn, if_exists='replace', index=False)
-        print(f"💾 Banco de dados criado/atualizado em: {DB_NAME}")
+        print(f"Banco de dados criado/atualizado em: {DB_NAME}")
         conn.close()
 
     except Exception as e:
