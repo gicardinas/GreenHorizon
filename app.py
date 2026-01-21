@@ -8,13 +8,13 @@ st.set_page_config(page_title="Green Horizon - Dashboard Real", layout="wide", p
 
 # --- FUNÇÃO DE ACESSO AOS DADOS REAIS ---
 def carregar_dados_reais():
-    # Conecta ao banco de dados SQL gerado na Fase 1 [cite: 30]
+    # Conecta ao banco de dados SQL gerado na Fase 1 
     conn = sqlite3.connect('etl/green_horizon.db')
     
     # Tabela com dados climáticos processados e limpos
     df_clima_limpo = pd.read_sql_query("SELECT * FROM historico_clima", conn)
     
-    # Tabela com o histórico de decisões do sistema (Fase 2) [cite: 33, 34]
+    # Tabela com o histórico de decisões do sistema (Fase 2) 
     df_logs = pd.read_sql_query("SELECT * FROM logs_decisao", conn)
     
     conn.close()
@@ -23,7 +23,7 @@ def carregar_dados_reais():
 # --- CARREGAMENTO E TRATAMENTO DE ERROS ---
 try:
     df_limpo, df_logs = carregar_dados_reais()
-    # Carrega o CSV sujo (legado) para fins de auditoria [cite: 19, 20]
+    # Carrega o CSV sujo (legado) para fins de auditoria 
     df_sujo = pd.read_csv('data/historico_leituras_sujo.csv') 
     
     # TRATAMENTO DE ERRO DE DATA (NameError/ValueError):
@@ -43,9 +43,9 @@ except Exception as e:
 
 # --- INTERFACE VISUAL ---
 st.title("🚜 Projeto Green Horizon - AgroTech 2.0")
-st.markdown("**Unidade Experimental:** Rio de Janeiro (Cristo Redentor) [cite: 5, 25]")
+st.markdown("**Unidade Experimental:** Rio de Janeiro (Cristo Redentor)")
 
-# 1. MONITORAMENTO (Requisito 4.1) [cite: 48]
+# 1. MONITORAMENTO 
 st.header("1. Monitoramento em Tempo Real")
 ultima_leitura = df_logs.iloc[-1] # Captura o estado mais recente do sistema
 col1, col2, col3 = st.columns(3)
@@ -61,9 +61,9 @@ st.info(f"**Status do Sistema:** {ultima_leitura['acao']} | **Motivo:** {ultima_
 
 st.divider()
 
-# 2. AUDITORIA DE DADOS (Requisito 4.2) [cite: 49]
+# 2. AUDITORIA DE DADOS 
 st.header("2. Auditoria de Qualidade (ETL)")
-st.write("Comprovação da limpeza de dados: Remoção de picos de 500°C dos sensores legados[cite: 10, 32].")
+st.write("Comprovação da limpeza de dados: Remoção de picos de 500°C dos sensores legados.")
 
 fig_auditoria = px.line(title="Comparativo de Temperatura: Dados Sujos vs. Dados Sanitizados")
 fig_auditoria.add_scatter(x=df_sujo['timestamp'], y=df_sujo['temp_ambiente'], name="Sensor Sujo (Erro)", line=dict(color='red'))
@@ -72,16 +72,16 @@ st.plotly_chart(fig_auditoria, use_container_width=True)
 
 st.divider()
 
-# 3. KPI DE ECONOMIA (Requisito 4.3) [cite: 50]
+# 3. KPI DE ECONOMIA  
 st.header("3. Inteligência de Negócio e Economia")
 c1, c2 = st.columns([1, 2])
 
-# Cálculo de irrigações evitadas (Chuvas futuras) ou adiadas (Horário de Ponta) [cite: 36, 37, 40]
+# Cálculo de irrigações evitadas (Chuvas futuras) ou adiadas (Horário de Ponta) 
 total_economizado = df_logs[df_logs['acao'].str.contains("NÃO IRRIGAR|ADIAR", na=False)].shape[0]
 
 with c1:
     st.metric("Ações de Economia Geradas", total_economizado)
-    st.success("Impacto: Redução de custos evitando o 'Horário de Ponta' (3x mais caro)[cite: 9].")
+    st.success("Impacto: Redução de custos evitando o 'Horário de Ponta' (3x mais caro).")
 
 with c2:
     df_distribuicao = df_logs['acao'].value_counts().reset_index()
