@@ -8,14 +8,14 @@ from clima_API import consultar_clima
 BASE_DIR = Path(__file__).resolve().parent.parent
 PATH_TARIFAS = BASE_DIR / 'data' / 'tarifas_energia.csv'
 PATH_CSV = BASE_DIR / 'data' / 'historico_leituras_sujo.csv'
-# Banco centralizado na pasta ETL onde estão seus dados limpos
+
 PATH_DB = BASE_DIR / 'etl' / 'green_horizon.db'
 
 def buscar_ultima_leitura_real():
     """Conecta no banco e recupera o registro mais recente para evitar dados fake."""
     try:
         conn = sqlite3.connect(PATH_DB)
-        # Busca a última linha da tabela historico_clima (com id_leitura, id_sensor)
+       
         query = "SELECT * FROM historico_clima ORDER BY timestamp DESC LIMIT 1"
         df_ultima = pd.read_sql(query, conn)
         conn.close()
