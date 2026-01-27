@@ -1,4 +1,3 @@
-```html
 <h1 align="center">🌱 Projeto Green Horizon - AgroTech 2.0</h1>
 
 <p align="center">
@@ -183,4 +182,3 @@ streamlit run dashboard/app.py
 O Green Horizon demonstra a aplicação prática de conceitos de Engenharia de Dados, Ciência de Dados e Automação,
 simulando um cenário real de irrigação inteligente com foco em sustentabilidade e eficiência operacional.
 </p>
-```
