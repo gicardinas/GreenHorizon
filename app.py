@@ -98,13 +98,27 @@ st.markdown("""
         border-left: 6px solid #2E7D32; /* Indicador de Status Verde */
         min-height: 160px; 
     }
+    
+    /* --- AJUSTE DO VALOR DA MÉTRICA (WRAP TEXT CORRIGIDO) --- */
+    /* Aplica estilo ao container do valor */
     div[data-testid="stMetricValue"] {
-        font-size: 26px; /* <--- AUMENTADO DE 22px PARA 26px PARA MAIOR DESTAQUE */
+        font-size: 26px; 
         color: #1E1E1E; 
         font-weight: 800;
-        white-space: normal !important; word-wrap: break-word !important;
-        line-height: 1.3; overflow: visible !important;
+        height: auto !important; /* Permite crescimento vertical */
     }
+    
+    /* Aplica estilo forçado aos elementos de texto INTERNOS para quebrar linha */
+    div[data-testid="stMetricValue"] div, 
+    div[data-testid="stMetricValue"] span {
+        white-space: normal !important; 
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.2 !important;
+        overflow: visible !important;
+        text-overflow: clip !important; /* Remove reticências */
+    }
+
     div[data-testid="stMetricLabel"] { font-size: 15px; color: #616161; font-weight: 600; }
 
     /* CABEÇALHO DA PÁGINA (BRANDING) */
