@@ -5,52 +5,81 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # ==============================================================================
-# 1. CONFIGURAÇÃO GERAL DA PÁGINA
+# 1. CONFIGURAÇÕES GERAIS E SISTEMA DE DESIGN
 # ==============================================================================
 st.set_page_config(
     page_title="Green Horizon | Intelligence", 
     layout="wide"
 )
 
+# Design System: Constantes de Cor e Estilo
+CHART_TEXT_COLOR = '#31333F'  # Alto contraste para leitura
+CHART_GRID_STRONG = '#B0B0B0' # Grade estrutural
+CHART_GRID_SOFT = '#E5E5E5'   # Grade suavizada
+
+# Paleta de Cores (Identidade Visual Azul - Consistente em todos os gráficos)
+THEME_COLOR_PALETTE = ['#1E88E5', '#42A5F5', '#64B5F6', '#90CAF9', '#BBDEFB']
+
+# Template base do Plotly para garantir consistência visual
+layout_padrao_charts = dict(
+    template="plotly_white",
+    paper_bgcolor='rgba(0,0,0,0)', 
+    plot_bgcolor='rgba(0,0,0,0)',  
+    font=dict(color=CHART_TEXT_COLOR),
+    xaxis=dict(
+        tickfont=dict(color=CHART_TEXT_COLOR),
+        titlefont=dict(color=CHART_TEXT_COLOR),
+        gridcolor=CHART_GRID_STRONG, 
+        gridwidth=1,
+        zeroline=False
+    ),
+    yaxis=dict(
+        tickfont=dict(color=CHART_TEXT_COLOR),
+        titlefont=dict(color=CHART_TEXT_COLOR),
+        gridcolor=CHART_GRID_STRONG,
+        gridwidth=1,
+        zeroline=False
+    ),
+    legend=dict(font=dict(color=CHART_TEXT_COLOR))
+)
+
+PLOTLY_CONFIG = {'locale': 'pt-br'}
+
 # ==============================================================================
-# 2. ESTILIZAÇÃO CSS AVANÇADA (UI/UX)
+# 2. ESTILIZAÇÃO CSS (UI/UX)
 # ==============================================================================
 st.markdown("""
     <style>
-    /* Importação de tipografia corporativa */
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+    /* Tipografia: Poppins (Títulos) e Inter (Corpo) via Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;700;800&display=swap');
 
-    /* --- SIDEBAR: IDENTIDADE VISUAL --- */
+    /* Reset Global de Fontes */
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, h4, h5 { font-family: 'Poppins', sans-serif !important; }
+
+    /* Customização da Barra Lateral (Sidebar) */
     section[data-testid="stSidebar"] {
-        background-color: #143d29; /* Fundo Verde Floresta Sólido */
-        border-right: 5px solid #4CAF50; /* Linha de demarcação visual */
+        background-color: #143d29;
+        border-right: 5px solid #4CAF50;
     }
     
-    /* Padronização de cor (Branco) para elementos textuais da Sidebar */
     section[data-testid="stSidebar"] .stMarkdown, 
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3, 
-    section[data-testid="stSidebar"] h4,
-    section[data-testid="stSidebar"] p, 
-    section[data-testid="stSidebar"] label, 
-    section[data-testid="stSidebar"] span {
+    section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] h3, section[data-testid="stSidebar"] p, 
+    section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] span {
         color: #FFFFFF !important;
     }
 
-    /* --- CORREÇÃO DO CALENDÁRIO (TEXTO CENTRALIZADO) --- */
-    /* Garante que o texto dentro do input branco seja escuro e CENTRALIZADO */
     section[data-testid="stSidebar"] input {
         color: #31333F !important;
         font-weight: 600;
-        text-align: center !important; /* <--- ALINHAMENTO CENTRALIZADO */
+        text-align: center !important; 
     }
     section[data-testid="stSidebar"] [data-testid="stDateInput"] svg {
         fill: #31333F !important;
     }
     
-    /* --- COMPONENTES PERSONALIZADOS (CARDS) --- */
-    /* Container translúcido com efeito Glassmorphism */
+    /* Cards da Sidebar */
     .sidebar-card {
         background-color: rgba(255, 255, 255, 0.08);
         padding: 15px;
@@ -60,70 +89,63 @@ st.markdown("""
         backdrop-filter: blur(5px);
     }
     .sidebar-card h5 {
-        margin-top: 0;
-        font-size: 13px;
-        color: #66BB6A !important; 
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 10px;
+        margin-top: 0; font-size: 13px; color: #66BB6A !important; 
+        font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
     }
-    .sidebar-card p {
-        font-size: 13px;
-        margin-bottom: 4px;
-        color: #E0E0E0 !important;
-    }
-    .sidebar-card b {
-        color: #FFFFFF !important;
-    }
-    
-    /* --- RODAPÉ TÉCNICO --- */
-    .sidebar-footer {
-        font-size: 11px;
-        color: rgba(255, 255, 255, 0.4) !important;
-        text-align: center;
-        margin-top: 30px;
-    }
+    .sidebar-card p { font-size: 13px; margin-bottom: 4px; color: #E0E0E0 !important; }
+    .sidebar-card b { color: #FFFFFF !important; }
+    .sidebar-footer { font-size: 11px; color: rgba(255, 255, 255, 0.4) !important; text-align: center; margin-top: 30px; }
 
-    /* --- LAYOUT PRINCIPAL --- */
+    /* Fundo da Aplicação */
     .stApp { background-color: #F0F2F6; color: #31333F; }
     
-    /* KPI CARDS (Métricas de Negócio) */
+    /* KPI Cards (Métricas) */
     div[data-testid="stMetric"] {
         background-color: #FFFFFF;
         border: 1px solid #E0E0E0;
         padding: 20px;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        border-left: 6px solid #2E7D32; /* Indicador de Status Verde */
-        min-height: 160px; 
+        border-left: 6px solid #2E7D32;
+        min-height: 160px; /* Garante altura para 2 linhas */
     }
     
-    /* --- AJUSTE DO VALOR DA MÉTRICA (WRAP TEXT CORRIGIDO) --- */
-    /* Aplica estilo ao container do valor */
     div[data-testid="stMetricValue"] {
-        font-size: 26px; 
+        font-size: 26px; /* RESTAURADO: Tamanho original grande */
         color: #1E1E1E; 
         font-weight: 800;
-        height: auto !important; /* Permite crescimento vertical */
+        font-family: 'Poppins', sans-serif;
     }
     
-    /* Aplica estilo forçado aos elementos de texto INTERNOS para quebrar linha */
-    div[data-testid="stMetricValue"] div, 
-    div[data-testid="stMetricValue"] span {
-        white-space: normal !important; 
-        word-wrap: break-word !important;
+    /* FIX: Permite quebra de linha e ajusta espaçamento */
+    div[data-testid="stMetricValue"] > div {
+        white-space: normal !important;     /* Permite quebra de linha */
+        word-wrap: break-word !important;   /* Quebra palavras longas se necessário */
         overflow-wrap: break-word !important;
-        line-height: 1.2 !important;
+        line-height: 1.1 !important;        /* Altura de linha mais justa para ficar bonito */
+        text-overflow: clip !important;     /* Remove reticências */
         overflow: visible !important;
-        text-overflow: clip !important; /* Remove reticências */
     }
-
+    
     div[data-testid="stMetricLabel"] { font-size: 15px; color: #616161; font-weight: 600; }
 
-    /* CABEÇALHO DA PÁGINA (BRANDING) */
+    /* Card de Insights */
+    .custom-insight-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E0E0E0;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border-left: 6px solid #2E7D32;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Cabeçalho */
     .main-title {
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Poppins', sans-serif;
         font-size: 60px !important; font-weight: 900 !important;
         background: -webkit-linear-gradient(45deg, #143d29, #4CAF50);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -131,7 +153,7 @@ st.markdown("""
         letter-spacing: -2px; text-transform: uppercase;
     }
     .subtitle {
-        font-family: 'Helvetica Neue', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 20px; color: #555555; font-weight: 400;
         margin-bottom: 30px; border-left: 4px solid #4CAF50; padding-left: 15px;
     }
@@ -139,74 +161,63 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 3. CAMADA DE DADOS (ETL & INTEGRAÇÃO)
+# 3. CAMADA DE DADOS (ETL)
 # ==============================================================================
 @st.cache_data
 def carregar_dados_reais():
     """
-    Realiza a conexão com o Data Warehouse (SQLite) e carrega os datasets necessários.
-    Executa o pré-processamento de timestamps e joins relacionais.
+    Carrega, limpa e integra dados de SQLite e CSV.
     """
     try:
-        # Conexão com Banco de Dados Analítico
         conn = sqlite3.connect('etl/green_horizon.db')
-        
-        # Ingestão de Tabelas Fato e Dimensão
         df_clima_limpo = pd.read_sql_query("SELECT * FROM historico_clima", conn)
         df_logs_raw = pd.read_sql_query("SELECT * FROM logs_decisao", conn)
         conn.close()
         
-        # Carregamento de Dados Brutos (Raw) para Auditoria
         df_sujo = pd.read_csv('data/historico_leituras_sujo.csv')
         
-        # Normalização de Timestamps (ISO 8601)
+        # Tratamento de timestamp
         for df in [df_clima_limpo, df_sujo, df_logs_raw]:
             df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce', format='mixed')
             df.dropna(subset=['timestamp'], inplace=True)
         
-        # Enriquecimento de Dados: Join de Decisões com Dados Climáticos
-        # Left Join garante que toda decisão tenha o contexto climático associado
+        # Junção de tabelas
         df_logs = pd.merge(df_logs_raw, df_clima_limpo[['timestamp', 'temp_ambiente']], on='timestamp', how='left')
         
         return df_clima_limpo, df_logs, df_sujo
     except Exception as e:
-        st.error(f"Falha crítica na conexão com o banco de dados: {e}")
+        st.error(f"Erro de conexão com dados: {e}")
         return None, None, None
 
-# Execução do Pipeline de Dados
 df_limpo, df_logs, df_sujo = carregar_dados_reais()
 
 if df_limpo is not None:
     # ==============================================================================
-    # 4. BARRA LATERAL (CONTROLE OPERACIONAL)
+    # 4. SIDEBAR (CONTROLES)
     # ==============================================================================
-    
-    # CABEÇALHO UNIFICADO (LOGO VERTICAL - AJUSTADO PARA NÃO QUEBRAR LINHA)
     st.sidebar.markdown("""
     <div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.15); margin-bottom: 25px;">
         <img src="https://img.icons8.com/fluency/96/natural-food.png" width="80" style="margin-bottom: 10px;">
         <div>
-            <h1 style="color: white; font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 900; margin: 0; line-height: 1.1; white-space: nowrap;">CENTRAL DE COMANDO</h1>
+            <h1 style="color: white; font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 900; margin: 0; line-height: 1.1; white-space: nowrap;">CENTRAL DE COMANDO</h1>
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Painel de Informações da Unidade (Metadados do Projeto)
     st.sidebar.markdown("""
     <div class="sidebar-card">
         <h5>📍 Detalhes da Unidade</h5>
         <p><b>Cliente:</b> Smart Farm Solutions</p>
         <p><b>Unidade:</b> Experimental - RJ</p>
-        <p><b>Local:</b> Prox. Cristo Redentor</p>
+        <p><b>Local:</b> Próximo ao Cristo Redentor</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Filtro Temporal (Date Range Picker)
+    # Filtro Temporal
     st.sidebar.markdown("<h4 style='color: white; margin-bottom: 5px;'>📅 Período de Análise</h4>", unsafe_allow_html=True)
     min_date = df_limpo['timestamp'].min().date()
     max_date = df_limpo['timestamp'].max().date()
     
-    # Input de Data (Formato BR)
     data_sel = st.sidebar.date_input(
         "Selecione o Intervalo", 
         [min_date, max_date], 
@@ -214,38 +225,33 @@ if df_limpo is not None:
         format="DD/MM/YYYY"
     )
 
-    # --- LÓGICA DE FILTRAGEM ---
     if len(data_sel) == 2:
         start_date, end_date = data_sel
-        # Filtra os dados com base na seleção do usuário
         df_limpo = df_limpo[(df_limpo['timestamp'].dt.date >= start_date) & (df_limpo['timestamp'].dt.date <= end_date)]
         df_logs  = df_logs[(df_logs['timestamp'].dt.date >= start_date) & (df_logs['timestamp'].dt.date <= end_date)]
         df_sujo  = df_sujo[(df_sujo['timestamp'].dt.date >= start_date) & (df_sujo['timestamp'].dt.date <= end_date)]
 
-    # Monitoramento de Saúde do Sistema (Health Check)
     st.sidebar.markdown("""
     <div class="sidebar-card" style="margin-top: 25px;">
         <h5>📶 Status do Sistema</h5>
         <p>🟢 Conexão: <b>Estável</b></p>
         <p>📡 Sensores: <b>Ativos</b></p>
-        <p>🔄 Última Sinc.: <b>Tempo Real</b></p>
+        <p>🔄 Sincronização: <b>Automática</b></p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Versionamento
     st.sidebar.markdown('<p class="sidebar-footer">v2.4.1 | Green Horizon System</p>', unsafe_allow_html=True)
 
     # ==============================================================================
-    # 5. DASHBOARD PRINCIPAL (VIEW)
+    # 5. DASHBOARD (VISUALIZAÇÃO)
     # ==============================================================================
     st.markdown('<h1 class="main-title">Green Horizon</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">AgroTech 2.0 | Monitoramento de Precisão & Inteligência de Dados</p>', unsafe_allow_html=True)
     
-    # Verifica se há dados após o filtro para evitar erros
     if not df_logs.empty:
-        # --- KPIs em Tempo Real ---
         ultima_leitura = df_logs.iloc[-1]
         
+        # Cards de KPI
         m1, m2, m3, m4 = st.columns(4)
         with m1:
             st.metric("Umidade do Solo", f"{ultima_leitura['umidade_solo']}%")
@@ -254,44 +260,60 @@ if df_limpo is not None:
         with m3:
             st.metric("Tarifa Energética", ultima_leitura['tarifa'])
         with m4:
-            # Cálculo de ROI (Ciclos economizados pela IA)
             acoes_inteligentes = df_logs[df_logs['acao'].str.contains("AGUARDAR|ADIAR", na=False, case=False)].shape[0]
             eficiencia = (acoes_inteligentes / len(df_logs)) * 100 if len(df_logs) > 0 else 0
             st.metric("Economia de Ciclos (%)", f"{eficiencia:.1f}%")
 
-        # Log de Auditoria da Decisão Mais Recente
         st.info(f"**⚙️ Decisão Operacional:** {ultima_leitura['acao']} — **Justificativa Técnica:** {ultima_leitura['motivo']}")
 
-        # ==============================================================================
-        # 6. VISUALIZAÇÃO DE DADOS (ANALYTICS)
-        # ==============================================================================
         tab1, tab2, tab3 = st.tabs(["📊 Auditoria de Sensores", "📈 Correlação Hídrica", "💰 Impacto de Negócio"])
 
-        # Gráfico 1: Qualidade de Dados (Data Quality Assurance)
+        # --- GRÁFICO 1: AUDITORIA DE DADOS ---
         with tab1:
-            st.subheader("Sanitização de Dados em Tempo Real")
+            st.subheader("Auditoria da Qualidade dos Dados")
             fig_auditoria = go.Figure()
             
-            # Série de Dados Sujos (Outliers Detectados)
+            # Dados Brutos (Sujo)
             fig_auditoria.add_trace(go.Scatter(
                 x=df_sujo['timestamp'], 
                 y=df_sujo['temp_ambiente'], 
-                name="Sensor Sujo (Erro)", 
+                name="Leitura Bruta (Raw)", 
                 line=dict(color='#E53935', width=1, dash='dot')
             ))
             
-            # Série de Dados Limpos (Pós-ETL)
+            # Dados Tratados (Validado)
             fig_auditoria.add_trace(go.Scatter(
                 x=df_limpo['timestamp'], 
                 y=df_limpo['temp_ambiente'], 
-                name="Sensor Limpo (IA)", 
+                name="Dado Tratado (Validado)", 
                 line=dict(color='#1E88E5', width=2)
             ))
             
-            fig_auditoria.update_layout(template="plotly_white", paper_bgcolor='white', plot_bgcolor='white', hovermode="x unified")
-            st.plotly_chart(fig_auditoria, use_container_width=True)
+            fig_auditoria.update_layout(**layout_padrao_charts)
+            fig_auditoria.update_layout(hovermode="x unified", title_text="", margin=dict(t=20))
 
-        # Gráfico 2: Matriz de Decisão (Scatter Plot)
+            # Eixo Y
+            fig_auditoria.update_yaxes(
+                title_text="Temperatura (°C)",
+                title_font=dict(color=CHART_TEXT_COLOR),
+                tickvals=[0, 100, 200, 300, 400, 500],
+                range=[-20, 530],
+                gridcolor=CHART_GRID_SOFT, 
+                zeroline=True,             
+                zerolinecolor=CHART_GRID_STRONG,
+                zerolinewidth=1
+            )
+            # Eixo X
+            fig_auditoria.update_xaxes(
+                gridcolor=CHART_GRID_SOFT,
+                zeroline=True,
+                zerolinecolor=CHART_GRID_STRONG,
+                zerolinewidth=1
+            )
+
+            st.plotly_chart(fig_auditoria, use_container_width=True, config=PLOTLY_CONFIG)
+
+        # --- GRÁFICO 2: MATRIZ DE DECISÃO ---
         with tab2:
             st.subheader("Análise Multivariada: Solo vs. Clima")
             fig_scatter = px.scatter(
@@ -305,26 +327,31 @@ if df_limpo is not None:
                     "umidade_solo": "Umidade do Solo (%)", 
                     "acao": "Ação do Sistema"
                 },
-                color_discrete_sequence=px.colors.qualitative.Safe
+                color_discrete_sequence=THEME_COLOR_PALETTE
             )
-            fig_scatter.update_layout(template="plotly_white", paper_bgcolor='white', plot_bgcolor='white')
-            st.plotly_chart(fig_scatter, use_container_width=True)
+            
+            fig_scatter.update_layout(**layout_padrao_charts)
+            
+            # Travamento de eixos para contexto visual
+            fig_scatter.update_xaxes(range=[0, 45])  
+            fig_scatter.update_yaxes(range=[0, 100])
+            fig_scatter.update_traces(marker=dict(size=18)) 
+            
+            st.plotly_chart(fig_scatter, use_container_width=True, config=PLOTLY_CONFIG)
 
-        # Gráfico 3: Impacto Financeiro (Financial Insights)
+        # --- GRÁFICO 3: DISTRIBUIÇÃO E ECONOMIA ---
         with tab3:
             c1, c2 = st.columns([1, 2])
             
-            # Resumo Executivo
             with c1:
                 total_economizado = df_logs[df_logs['acao'].str.contains("AGUARDAR|ADIAR", na=False, case=False)].shape[0]
                 st.markdown(f"""
-                <div style="background-color: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd;">
-                    <h3 style="color: #2E7D32;">Economia Gerada</h3>
-                    <p style="font-size: 18px;">O algoritmo evitou <b>{total_economizado}</b> ciclos de irrigação desnecessários.</p>
+                <div class="custom-insight-card">
+                    <h3 style="color: #2E7D32; margin-top: 0;">Economia Gerada</h3>
+                    <p style="font-size: 18px; color: #1E1E1E;">O algoritmo evitou <b>{total_economizado}</b> ciclos de irrigação desnecessários.</p>
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Distribuição de Ações (Donut Chart)
             with c2:
                 df_dist = df_logs['acao'].value_counts().reset_index()
                 fig_pie = px.pie(
@@ -332,11 +359,14 @@ if df_limpo is not None:
                     values='count', 
                     names='acao', 
                     hole=.4,
-                    title="Mix de Operações da Fazenda"
+                    title="Mix de Operações da Fazenda",
+                    color_discrete_sequence=THEME_COLOR_PALETTE
                 )
-                fig_pie.update_layout(template="plotly_white", paper_bgcolor='white')
-                st.plotly_chart(fig_pie, use_container_width=True)
+                fig_pie.update_layout(**layout_padrao_charts)
+                fig_pie.update_traces(textfont_size=24)
+                
+                st.plotly_chart(fig_pie, use_container_width=True, config=PLOTLY_CONFIG)
     else:
-        st.warning("⚠️ Nenhum dado encontrado para o período selecionado. Tente ajustar o intervalo de datas na barra lateral.")
+        st.warning("⚠️ Nenhum dado encontrado. Ajuste o filtro de datas.")
 else:
-    st.error("Erro crítico: Não foi possível carregar o banco de dados local.")
+    st.error("Erro crítico: Banco de dados indisponível.")
