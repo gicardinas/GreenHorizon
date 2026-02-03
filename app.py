@@ -20,28 +20,28 @@ CHART_GRID_SOFT = '#E5E5E5'   # Grade suavizada
 # Paleta de Cores (Identidade Visual Azul - Consistente em todos os gráficos)
 THEME_COLOR_PALETTE = ['#1E88E5', '#42A5F5', '#64B5F6', '#90CAF9', '#BBDEFB']
 
-# Template base do Plotly para garantir consistência visual
-layout_padrao_charts = dict(
-    template="plotly_white",
-    paper_bgcolor='rgba(0,0,0,0)', 
-    plot_bgcolor='rgba(0,0,0,0)',  
-    font=dict(color=CHART_TEXT_COLOR),
-    xaxis=dict(
-        tickfont=dict(color=CHART_TEXT_COLOR),
-        titlefont=dict(color=CHART_TEXT_COLOR),
-        gridcolor=CHART_GRID_STRONG, 
-        gridwidth=1,
-        zeroline=False
-    ),
-    yaxis=dict(
-        tickfont=dict(color=CHART_TEXT_COLOR),
-        titlefont=dict(color=CHART_TEXT_COLOR),
-        gridcolor=CHART_GRID_STRONG,
-        gridwidth=1,
-        zeroline=False
-    ),
-    legend=dict(font=dict(color=CHART_TEXT_COLOR))
-)
+# Template base do Plotly (Dicionário robusto para compatibilidade Cross-Server)
+layout_padrao_charts = {
+    "template": "plotly_white",
+    "paper_bgcolor": "rgba(0,0,0,0)", 
+    "plot_bgcolor": "rgba(0,0,0,0)",  
+    "font": {"color": CHART_TEXT_COLOR},
+    "xaxis": {
+        "tickfont": {"color": CHART_TEXT_COLOR},
+        "titlefont": {"color": CHART_TEXT_COLOR},
+        "gridcolor": CHART_GRID_STRONG, 
+        "gridwidth": 1,
+        "zeroline": False
+    },
+    "yaxis": {
+        "tickfont": {"color": CHART_TEXT_COLOR},
+        "titlefont": {"color": CHART_TEXT_COLOR},
+        "gridcolor": CHART_GRID_STRONG,
+        "gridwidth": 1,
+        "zeroline": False
+    },
+    "legend": {"font": {"color": CHART_TEXT_COLOR}}
+}
 
 PLOTLY_CONFIG = {'locale': 'pt-br'}
 
@@ -111,7 +111,7 @@ st.markdown("""
     }
     
     div[data-testid="stMetricValue"] {
-        font-size: 26px; /* RESTAURADO: Tamanho original grande */
+        font-size: 26px; /* Tamanho ajustado para impacto visual */
         color: #1E1E1E; 
         font-weight: 800;
         font-family: 'Poppins', sans-serif;
@@ -289,10 +289,15 @@ if df_limpo is not None:
                 line=dict(color='#1E88E5', width=2)
             ))
             
-            fig_auditoria.update_layout(**layout_padrao_charts)
+            # Aplicação de layout com tratamento de erro (Fallback para Cloud)
+            try:
+                fig_auditoria.update_layout(**layout_padrao_charts)
+            except Exception:
+                fig_auditoria.update_layout(template="plotly_white")
+                
             fig_auditoria.update_layout(hovermode="x unified", title_text="", margin=dict(t=20))
 
-            # Eixo Y
+            # Ajuste Fino dos Eixos
             fig_auditoria.update_yaxes(
                 title_text="Temperatura (°C)",
                 title_font=dict(color=CHART_TEXT_COLOR),
@@ -303,7 +308,6 @@ if df_limpo is not None:
                 zerolinecolor=CHART_GRID_STRONG,
                 zerolinewidth=1
             )
-            # Eixo X
             fig_auditoria.update_xaxes(
                 gridcolor=CHART_GRID_SOFT,
                 zeroline=True,
@@ -330,7 +334,10 @@ if df_limpo is not None:
                 color_discrete_sequence=THEME_COLOR_PALETTE
             )
             
-            fig_scatter.update_layout(**layout_padrao_charts)
+            try:
+                fig_scatter.update_layout(**layout_padrao_charts)
+            except Exception:
+                fig_scatter.update_layout(template="plotly_white")
             
             # Travamento de eixos para contexto visual
             fig_scatter.update_xaxes(range=[0, 45])  
@@ -362,7 +369,12 @@ if df_limpo is not None:
                     title="Mix de Operações da Fazenda",
                     color_discrete_sequence=THEME_COLOR_PALETTE
                 )
-                fig_pie.update_layout(**layout_padrao_charts)
+                
+                try:
+                    fig_pie.update_layout(**layout_padrao_charts)
+                except Exception:
+                    fig_pie.update_layout(template="plotly_white")
+                    
                 fig_pie.update_traces(textfont_size=24)
                 
                 st.plotly_chart(fig_pie, use_container_width=True, config=PLOTLY_CONFIG)
